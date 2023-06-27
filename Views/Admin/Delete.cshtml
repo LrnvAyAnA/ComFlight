@@ -1,0 +1,363 @@
+﻿@using ComFlight.ViewModels;
+
+@{
+    ViewData["Title"] = "Delete";
+}
+@model CombinedModel
+@Html.Partial("AdminAccount")
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+        .search-results li {
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            width: 100%;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: none;
+        }
+
+            .search-results li:hover {
+                background-color: #a5a9ad;
+            }
+        .space {
+            height: 35px;
+        }
+
+        .modal-content {
+            width: 45%;
+            height: 40%;
+            background-color: #fefefe;
+            margin: 18% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            margin-left: auto;
+            margin-top: -50px;
+        }
+
+            .close:hover,
+            .close:focus {
+                color: black;
+                text-decoration: none;
+                cursor: pointer;
+            }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+        .buttonAccount {
+            display: inline-block;
+            padding: 8px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-right: 10px;
+            width: 100px;
+        }
+
+        input[type="text"] {
+            width: 150px;
+        }
+
+        .search-container {
+            position: relative;
+        }
+        </style>
+    </head>
+    <body>
+    <div class="space"></div>
+    <div id="center">
+        <select id="deleteSelect">
+            <option value="Airport" selected>Аэропорт</option>
+            <option value="Admin">Админ</option>
+            <option value="Airline">Авиакомпания</option>
+            <option value="Flight">Рейс</option>
+            <option value="Route">Маршрут</option>
+            <option value="Booking">Бронирование</option>
+            <option value="Ticket">Билет</option>
+            <option value="User">Пользователь</option>
+            <option value="Plane">Самолет</option>
+        </select>
+        <div id="spacer"></div>
+        <div id="spacer"></div>
+        <button class="buttonAccount" id="openModalButton">Выбрать</button>
+    </div>
+
+    <div id="airportModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="search-container">
+                <input class="field" type="text" id="airport" placeholder="Аэропорт" autocomplete="off" />
+                <ul id="airportResults" class="search-results"></ul>
+            </div>
+            <button id="deleteAirportButton" type="submit">Удалить аэропорт</button>
+        </div>
+    </div>
+    <div id="FlightModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <select id="airlineForFlight"></select>
+            <div style="margin-bottom:20px;"></div>
+            <div class="search-container">
+                <input class="field" type="text" id="airl" placeholder="Аэропорт" autocomplete="off" />
+            </div>
+            <div style="margin-bottom:20px;"></div>
+            <button id="updateFlightButton" type="submit">Редактировать авиакомпанию</button>
+        </div>
+    </div>
+
+    @section scripts{
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script>
+            document.getElementById("openModalButton").addEventListener("click", function () {
+                var selectElement = document.getElementById("deleteSelect");
+                var selectedValue = selectElement.value;
+
+                switch (selectedValue) {
+                    case "User":
+                        openUserModal();
+                        break;
+                    case "Admin":
+                        openAdminModal();
+                        break;
+                    case "Airport":
+                        openAirportModal();
+                        break;
+                    case "Airline":
+                        openAirlineModal();
+                        break;
+                    case "Flight":
+                        openFlightModal();
+                        break;
+                    case "Route":
+                        openRouteModal();
+                        break;
+                    case "Booking":
+                        openBookingModal();
+                        break;
+                    case "Ticket":
+                        openTicketModal();
+                        break;
+                    default:
+                        break;
+                }
+            });
+
+
+            // Получаем модальное окно и кнопку закрытия
+            var airportModal = document.getElementById("airportModal");
+            var closeButtonAirport = document.querySelector("#airportModal .close");
+            function openAirportModal() {
+                airportModal.style.display = "block";
+            }
+            closeButtonAirport.addEventListener("click", function () {
+                airportModal.style.display = "none";
+            });
+
+            //ОБработка для поиска аэропорта
+            $(document).ready(function () {
+                $('#airport').on('input', function () {
+                    var searchTerm = $(this).val().toLowerCase();
+
+                    $.ajax({
+                        url: '/SearchTicket/GetAirports', // Путь к обработчику поискового запроса на сервере
+                        type: 'GET',
+                        data: { searchTerm: searchTerm },
+                        success: function (response) {
+                            var searchResults = response; // Полученные результаты поиска
+
+                            // Очищаем предыдущие результаты
+                            $('#airportResults').empty();
+
+                            // Добавляем новые результаты в список
+                            $.each(searchResults, function (index, result) {
+                                $('#airportResults').append('<li>' + result.airportModel.name + ' (' + result.airportModel.city + ')' + '</li>');
+                            });
+
+                            // Показываем или скрываем список результатов в зависимости от наличия результатов
+
+                            if (searchResults.length > 0) {
+                                $('#airportResults').show();
+                            } else {
+                                $('#airportResults').hide();
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            // Обработка ошибок при выполнении запроса
+                            console.error('Ошибка AJAX-запроса:', error);
+                        }
+                    });
+                    $('#airportResults').on('click', 'li', function () {
+                        var selectedResult = $(this).text();
+                        $('#airport').val(selectedResult);
+                        $('#airportResults').hide();
+                    });
+                });
+            });
+
+            // Обработка нажатия кнопки "Удалить аэропорт"
+            var addAirportButton = document.getElementById("deleteAirportButton");
+            addAirportButton.addEventListener("click", function () {
+                var airportNameInput = document.getElementById("airport");
+                var airportCityString = airportNameInput.value;
+                try{
+                    var splitString = airportCityString.split("(");
+                    var airportName = splitString[0].trim();
+                    var cityName = splitString[1].replace(")", "").trim();
+                               
+                var airport = {
+                    Name: airportName,
+                    City: cityName
+                };
+                var combinedModel = {
+                    AirportModel: airport
+                };
+
+                $.ajax({
+                    url: "/Admin/DeleteAirport",
+                    type: "POST",
+                    data: JSON.stringify(combinedModel),
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (result) {
+                        // Обработка успешного ответа от сервера
+                        alert(result.message);
+                        location.reload(true);
+                    },
+                    error: function (xhr, status, error) {
+                        // Обработка ошибки
+                        if (xhr.status !== 200) {
+                            var errorMessage = xhr.responseText;
+                            alert('Произошла ошибка при удалении аэропорта: ' + errorMessage);
+                        }
+
+                    }
+                });
+                }
+                catch(error){
+                    alert('Такого аэропорта нет');
+                }
+            });
+
+
+
+
+
+            function openAirlineModal() {
+                // Код для открытия модального окна "Авиакомпания"
+            }
+
+            function openFlightModal() {
+                // Код для открытия модального окна "Рейс"
+            }
+
+            function openRouteModal() {
+                // Код для открытия модального окна "Маршрут"
+            }
+
+            function openBookingModal() {
+                // Код для открытия модального окна "Бронирование"
+            }
+
+            function openTicketModal() {
+                // Код для открытия модального окна "Билет"
+            }
+
+        </script>
+        <script>
+            var FlightModal = document.getElementById("FlightModal");
+            var closeButtonFlight = document.querySelector("#FlightModal .close");
+            function openAirlineModal() {
+                FlightModal.style.display = "block";
+            }
+            closeButtonFlight.addEventListener("click", function () {
+                FlightModal.style.display = "none";
+            });
+            $(document).ready(function () {
+                $.ajax({
+                    url: '/SearchTicket/GetAirlines', // Путь к обработчику поискового запроса на сервере
+                    type: 'GET',
+                    success: function (response) {
+                        var searchResults = response; // Полученные результаты поиска
+                        $('#airlineForFlight').empty();
+                        // Добавляем результаты в список
+                        $.each(searchResults, function (index, result) {
+                            if (result) {
+                                $('#airlineForFlight').append('<option>' + result.name + '</option>');
+                            }
+                        });
+                        // Показываем или скрываем список результатов в зависимости от наличия результатов
+                    },
+                    error: function (xhr, status, error) {
+                        // Обработка ошибок при выполнении запроса
+                        console.error('Ошибка AJAX-запроса:', error);
+                    }
+                });
+            });
+            var updateFlightButton = document.getElementById("updateFlightButton");
+            updateFlightButton.addEventListener("click", function () {
+                var updated = document.getElementById("airl");
+                var upd = updated.value;
+                var curInput = document.getElementById("airlineForFlight");
+                var cur = curInput.value;
+                var airline = {
+                    Name:upd
+                };
+                var combinedModel = {
+                    AirlineModel: airline
+                };
+                $.ajax({
+                    url: "/Admin/UpdateAirline",
+                    type: "POST",
+                    data: { curName:cur,CombinedModel: combinedModel }/*JSON.stringify(combinedModel)*/,
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (result) {
+                        // Обработка успешного ответа от сервера
+                        alert(result.message);
+                        location.reload(true);
+                    },
+                    error: function (xhr, status, error) {
+                        // Обработка ошибки
+                        if (xhr.status !== 200) {
+                            var errorMessage = xhr.responseText;
+                            alert('Произошла ошибка при редактировании авиакомпании: ' + errorMessage);
+                        }
+
+                    }
+                });
+            });
+        </script>
+    }
+    </body>
+</html>
+

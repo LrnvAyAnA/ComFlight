@@ -1,0 +1,899 @@
+﻿@using ComFlight.ViewModels;
+
+@{
+    ViewData["Title"] = "Add";
+}
+@model CombinedModel
+@Html.Partial("AdminAccount")
+<!DOCTYPE html>
+<html>
+    <head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+
+    <style>
+        .search-results li {
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            width: 100%;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: none;
+        }
+            .search-results li:hover {
+                background-color: #a5a9ad;
+            }
+
+        .space{
+                height:35px;
+            }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+
+        .modal-content {
+            width: 45%;
+            height: 40%;
+            background-color: #fefefe;
+            margin: 18% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            margin-left: auto;
+            margin-top:-50px;
+        }
+
+            .close:hover,
+            .close:focus {
+                color: black;
+                text-decoration: none;
+                cursor: pointer;
+            }
+
+        .buttonAccount {
+            display: inline-block;
+            padding: 8px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-right: 10px;
+            width:100px;
+        }
+
+        input[type="text"]{
+            width: auto;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .gray-text {
+            color: gray;
+        }
+
+        #airportFromResults {
+            position: absolute;
+            z-index: 2;
+        }
+        </style>
+    </head>
+    <body>
+    <div class="space"></div>
+    <div id="center">
+        <select id ="addSelect">
+            <option value="City" selected>Город</option>
+            <option value="Admin">Админ</option>
+            <option value="Airport">Аэропорт</option>
+            <option value="Airline">Авиакомпания</option>
+            <option value="Flight">Рейс</option>
+            <option value="Route">Маршрут</option>
+            <option value="Booking">Бронирование</option>
+            <option value="Ticket">Билет</option>
+            <option value="Plane">Самолет</option>
+        </select>
+        <div id="spacer"></div>
+        <div id="spacer"></div>
+        <button class="buttonAccount" id="openModalButton">Выбрать</button>
+    </div>
+
+    <div id="cityModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <input type="text" id="cityName" placeholder="Имя города">
+            <div class="space"></div>
+                <button style="width:150px;" id="addCityButton" class="buttonAccount" type="submit">Добавить</button>
+            </div>
+        </div>
+
+    <div id="airportModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <input type="text" id="airportName" placeholder="Аэропорт">
+            <div style="height:15px;"></div>
+            <div class="search-container">
+                <input class="field" type="text" id="airportCity" placeholder="Город" autocomplete="off" />
+                <ul id="airportCityResults" class="search-results"></ul>
+            </div>
+            <div class="space"></div>
+            <button style="width:165px;" class="buttonAccount" id="addAirportButton" type="submit">Добавить</button>
+        </div>
+    </div>
+
+    <div id="airlineModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <input type="text" id="airlineName" placeholder="Имя авиакомпании" autocomplete="off">
+            <div class="space"></div>
+            <button style="width:150px;" id="addAirlineButton" class="buttonAccount" type="submit">Добавить</button>
+        </div>
+    </div>
+
+    <div id="routeModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div>
+				<div class="search-container">
+					<input type="text" class="field" id="airportFromName" placeholder="Аэропорт отправления" autocomplete="off"/>
+					<ul id="airportFromResults" class="search-results"></ul>
+				</div>
+				<div style="height:15px;"></div>
+				<div class="search-container">
+					<input type="text" class="field" id="airportToName" placeholder="Аэропорт прибытия" autocomplete="off"/>
+					<ul id="airportToResults" class="search-results"></ul>
+				</div>
+            </div>      
+            <div class="space"></div>
+            <button style="width:150px;" id="addRouteButton" class="buttonAccount" type="submit">Добавить</button>
+        </div>
+    </div>
+
+    <div id="flightModal" class="modal">
+        <div class="modal-content" style="height:60%;width:70%;">
+            <span class="close">&times;</span>
+            <div>
+                <div class="form-group" style="display:inline-block;">
+                    <label for="datetimepicker">Время вылета:</label>
+                    <input type="text" class="form-control" id="datetimepickerFrom">
+                </div>
+                <div class="form-group" style="display:inline-block;">
+                    <label for="datetimepicker">Время прилета:</label>
+                    <input type="text" class="form-control" id="datetimepickerTo">
+                </div>
+            </div>
+            <div>
+                <input type="text" class="form-control" id="Price" placeholder="Цена" style="margin-left:50px;">
+            </div>
+            <div style="padding-bottom:20px;"></div>
+            <div>
+                <select id="aircraft-list" style="width:150px;"></select>
+                <select id="airlineForFlight" ></select>
+                <select id="routeForFlight"></select>
+            </div>
+            <div class="space"></div>
+            <button style="width:150px;" id="addFlightButton" class="buttonAccount" type="submit">Добавить</button>
+        </div>
+    </div>
+
+    <div id="planeModal" class="modal">
+        <div class="modal-content" style="height:60%;width:70%;">
+            <span class="close">&times;</span>
+            <div>
+                <div class="form-group" style="display:inline-block;">
+                    <label for="datetimepicker">Дата производства:</label>
+                    <input type="text" class="form-control" id="dateManufacture" style="width:auto">
+                </div>
+                <input type="text" class="form-control" id="numderOfRow" placeholder="Количество рядов" style="width:auto">
+                <input type="text" class="form-control" id="modelPlane" placeholder="Модель самолета" style="width:auto">              
+                <input type="text" class="form-control" id="numderOfSeats" placeholder="Количество мест" style="width:auto">
+            </div>
+            <div class="space"></div>
+            <button style="width:150px;" id="addPlaneButton" class="buttonAccount" type="submit">Добавить</button>
+        </div>
+    </div>
+
+
+
+
+@section scripts{
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        @*<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">*@
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+        <script>
+            document.getElementById("openModalButton").addEventListener("click", function () {
+                var selectElement = document.getElementById("addSelect");
+                var selectedValue = selectElement.value;
+
+                switch (selectedValue) {
+                    case "City":
+                        openCityModal();
+                        break;
+                    case "Admin":
+                        openAdminModal();
+                        break;
+                    case "Airport":
+                        openAirportModal();
+                        break;
+                    case "Airline":
+                        openAirlineModal();
+                        break;
+                    case "Flight":
+                        openFlightModal();
+                        break;
+                    case "Route":
+                        openRouteModal();
+                        break;
+                    case "Booking":
+                        openBookingModal();
+                        break;
+                    case "Ticket":
+                        openTicketModal();
+                        break;
+                    case "Plane":
+                        openPlaneModal();
+                        break;
+                    default:
+                        break;
+                }
+            });
+
+
+            function openBookingModal() {
+                // Код для открытия модального окна "Бронирование"
+            }
+
+            function openTicketModal() {
+                // Код для открытия модального окна "Билет"
+            }
+
+        </script>
+        
+        @*Добавление города*@
+        <script>           
+            // Получаем модальное окно и кнопку закрытия
+            var cityModal = document.getElementById("cityModal");
+            var closeButtonCity = document.querySelector("#cityModal .close");
+
+            // Открытие модального окна
+            function openCityModal() {
+                cityModal.style.display = "block";
+            }
+
+            // Закрытие модального окна при нажатии на кнопку закрытия
+            closeButtonCity.addEventListener("click", function () {
+                cityModal.style.display = "none";
+            });
+
+            // Обработка нажатия кнопки "Добавить город"
+            var addCityButton = document.getElementById("addCityButton");
+            addCityButton.addEventListener("click", function () {
+                var cityNameInput = document.getElementById("cityName");
+                var cityName = cityNameInput.value;
+                var city = {
+                    Name: $('#cityName').val()
+                };
+                var combinedModel = {
+                    CityModel: city
+                };
+                $.ajax({
+                    url: "/Admin/AddCity",
+                    type: "POST",
+                    data: JSON.stringify(combinedModel),
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (result) {
+                        // Обработка успешного ответа от сервера
+                        alert(result.message);
+                        location.reload(true);
+                    },
+                    error: function (xhr, status, error) {
+                        // Обработка ошибки
+                        if (xhr.status !== 200) {
+                            var errorMessage = xhr.responseText;
+                            alert('Произошла ошибка при добавлении города: ' + errorMessage);
+                        }
+
+                    }
+                });
+            });
+        </script>
+
+        @*Добавление аэропорта*@
+        <script>
+            // Получаем модальное окно и кнопку закрытия
+            var airportModal = document.getElementById("airportModal");
+            var closeButtonAirport = document.querySelector("#airportModal .close");
+
+            // Открытие модального окна
+            function openAirportModal() {
+                airportModal.style.display = "block";
+            }
+
+            // Закрытие модального окна при нажатии на кнопку закрытия
+            closeButtonAirport.addEventListener("click", function () {
+                airportModal.style.display = "none";
+            });
+
+            ////Обработка для выбора города
+            $(document).ready(function () {
+                $('#airportCity').on('input', function () {
+                    var searchTerm = $(this).val().toLowerCase();
+
+                    $.ajax({
+                        url: '/SearchTicket/GetCities', // Путь к обработчику поискового запроса на сервере
+                        type: 'GET',
+                        data: { searchTerm: searchTerm },
+                        success: function (response) {
+                            var searchResults = response; // Полученные результаты поиска
+
+                            // Очищаем предыдущие результаты
+                            $('#airportCityResults').empty();
+
+                            // Добавляем новые результаты в список
+                            $.each(searchResults, function (index, result) {
+                                $('#airportCityResults').append('<li>' + result + '</li>');
+                            });
+
+                            // Показываем или скрываем список результатов в зависимости от наличия результатов
+
+                            if (searchResults.length > 0) {
+                                $('#airportCityResults').show();
+                            } else {
+                                $('#airportCityResults').hide();
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            // Обработка ошибок при выполнении запроса
+                            console.error('Ошибка AJAX-запроса:', error);
+                        }
+                    });
+                    $('#airportCityResults').on('click', 'li', function () {
+                        var selectedResult = $(this).text();
+                        $('#airportCity').val(selectedResult);
+                        $('#airportCityResults').hide();
+                    });
+                });
+            });
+
+            // Обработка нажатия кнопки "Добавить аэропорт"
+            var addAirportButton = document.getElementById("addAirportButton");
+            addAirportButton.addEventListener("click", function () {
+                var airportNameInput = document.getElementById("airportName");
+                var airportName = airportNameInput.value;
+                var airport = {
+                    Name: $('#airportName').val(),
+                    City: $('#airportCity').val()
+                };
+                var combinedModel = {
+                    AirportModel: airport
+                };
+
+                $.ajax({
+                    url: "/Admin/AddAirport",
+                    type: "POST",
+                    data: JSON.stringify(combinedModel),
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (result) {
+                        // Обработка успешного ответа от сервера
+                        alert(result.message);
+                        location.reload(true);
+                    },
+                    error: function (xhr, status, error) {
+                        // Обработка ошибки
+                        if (xhr.status !== 200) {
+                            var errorMessage = xhr.responseText;
+                            alert('Произошла ошибка при добавлении города: ' + errorMessage);
+                        }
+
+                    }
+                });
+            });
+        </script>
+
+        @*Добавление авиакомпании*@
+        <script>
+            //Добавление авиакомпании
+            // Получаем модальное окно и кнопку закрытия
+            var airlineModal = document.getElementById("airlineModal");
+            var closeButtonAirline = document.querySelector("#airlineModal .close");
+
+            // Открытие модального окна
+            function openAirlineModal() {
+                airlineModal.style.display = "block";
+            }
+
+            // Закрытие модального окна при нажатии на кнопку закрытия
+            closeButtonAirline.addEventListener("click", function () {
+                airlineModal.style.display = "none";
+            });
+
+            // Обработка нажатия кнопки "Добавить город"
+            var addAirlineButton = document.getElementById("addAirlineButton");
+            addAirlineButton.addEventListener("click", function () {
+                var airlineNameInput = document.getElementById("cityName");
+                var cityName = airlineNameInput.value;
+                var airline = {
+                    Name: $('#airlineName').val()
+                };
+                var combinedModel = {
+                    AirlineModel: airline
+                };
+                $.ajax({
+                    url: "/Admin/AddAirline",
+                    type: "POST",
+                    data: JSON.stringify(combinedModel),
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (result) {
+                        // Обработка успешного ответа от сервера
+                        alert(result.message);
+                        location.reload(true);
+                    },
+                    error: function (xhr, status, error) {
+                        // Обработка ошибки
+                        if (xhr.status !== 200) {
+                            var errorMessage = xhr.responseText;
+                            alert('Произошла ошибка при добавлении города: ' + errorMessage);
+                        }
+
+                    }
+                });
+            });
+        </script>
+        
+       @* Добавление маршрута*@
+        <script>
+            var routeModal = document.getElementById("routeModal");
+            var closeButtonRoute = document.querySelector("#routeModal .close");
+
+            // Открытие модального окна
+            function openRouteModal() {
+                routeModal.style.display = "block";
+            }
+
+            // Закрытие модального окна при нажатии на кнопку закрытия
+            closeButtonRoute.addEventListener("click", function () {
+                routeModal.style.display = "none";
+            });
+
+            ////Обработка для выбора города
+            $(document).ready(function () {
+                $('#airportFromName').on('input', function () {
+                    var searchTerm = $(this).val().toLowerCase();
+
+                    $.ajax({
+                        url: '/SearchTicket/GetAirports', // Путь к обработчику поискового запроса на сервере
+                        type: 'GET',
+                        data: { searchTerm: searchTerm },
+                        success: function (response) {
+                            var searchResults = response; // Полученные результаты поиска
+                            // Очищаем предыдущие результаты
+                            $('#airportFromResults').empty();
+                            // Добавляем новые результаты в список
+                            $.each(searchResults, function (index, result) {
+                                if (result.airportModel && result.airportModel.name) {
+                                    $('#airportFromResults').append('<li>' + result.airportModel.name + ', <span class="gray-text">' + result.airportModel.city + '</span></li>');
+                                }
+                            });
+
+                            // Показываем или скрываем список результатов в зависимости от наличия результатов
+
+                            if (searchResults!=null) {
+                                $('#airportFromResults').show();
+                            } else {
+                                $('#airportFromResults').hide();
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            // Обработка ошибок при выполнении запроса
+                            console.error('Ошибка AJAX-запроса:', error);
+                        }
+                    });
+                    $('#airportFromResults').on('click', 'li', function () {
+                        var selectedResult = $(this).text();
+                        $('#airportFromName').val(selectedResult);
+                        $('#airportFromResults').hide();
+                    });
+                });
+            });
+            ////Обработка для выбора города
+            $(document).ready(function () {
+                $('#airportToName').on('input', function () {
+                    var searchTerm = $(this).val().toLowerCase();
+
+                    $.ajax({
+                        url: '/SearchTicket/GetAirports', // Путь к обработчику поискового запроса на сервере
+                        type: 'GET',
+                        data: { searchTerm: searchTerm },
+                        success: function (response) {
+                            var searchResults = response; // Полученные результаты поиска
+                            // Очищаем предыдущие результаты
+                            $('#airportToResults').empty();
+                            // Добавляем новые результаты в список
+                            $.each(searchResults, function (index, result) {
+                                if (result.airportModel && result.airportModel.name) {
+                                    $('#airportToResults').append('<li>' + result.airportModel.name + ', <span class="gray-text">' + result.airportModel.city + '</span></li>');
+                                }
+                            });
+
+                            // Показываем или скрываем список результатов в зависимости от наличия результатов
+
+                            if (searchResults.length > 0) {
+                                $('#airportToResults').show();
+                            } else {
+                                $('#airportToResults').hide();
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            // Обработка ошибок при выполнении запроса
+                            console.error('Ошибка AJAX-запроса:', error);
+                        }
+                    });
+                    $('#airportToResults').on('click', 'li', function () {
+                        var selectedResult = $(this).text();
+                        $('#airportToName').val(selectedResult);
+                        $('#airportToResults').hide();
+                    });
+                });
+            });
+            // Обработка нажатия кнопки "Добавить маршрут"
+            var addRouteButton = document.getElementById("addRouteButton");
+            addRouteButton.addEventListener("click", function () {
+                var airportFromNameInput = document.getElementById("airportFromName");
+                var airportFromName = airportFromNameInput.value;
+                var airportToNameInput = document.getElementById("airportToName");
+                var airportToName = airportToNameInput.value;
+                var route = {
+                    AirportFrom: $('#airportFromName').val(),
+                    AirportTo: $('#airportToName').val()
+                };
+                var combinedModel = {
+                    RouteModel: route
+                };
+
+                $.ajax({
+                    url: "/Admin/AddRoute",
+                    type: "POST",
+                    data: JSON.stringify(combinedModel),
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (result) {
+                        // Обработка успешного ответа от сервера
+                        alert(result.message);
+                        location.reload(true);
+                    },
+                    error: function (xhr, status, error) {
+                        // Обработка ошибки
+                        if (xhr.status !== 200) {
+                            var errorMessage = xhr.responseText;
+                            alert('Произошла ошибка при добавлении маршрута: ' + errorMessage);
+                        }
+
+                    }
+                });
+            });
+        </script>
+
+        @*Добавление рейса*@
+        <script>
+            var flightModal = document.getElementById("flightModal");
+            var closeButtonFlight = document.querySelector("#flightModal .close");
+            var Price = document.getElementById('Price');
+
+            // Назначаем обработчик события ввода
+            Price.addEventListener('input', function () {
+                // Получаем введенное значение
+                var PriceV = Price.value;
+
+                // Удаляем все символы, кроме цифр
+                var filteredValue = PriceV.replace(/\D/g, '');
+
+                // Устанавливаем отфильтрованное значение обратно в поле ввода
+                Price.value = filteredValue;
+            });
+            // Открытие модального окна
+            function openFlightModal() {
+                flightModal.style.display = "block";
+            }
+
+            // Закрытие модального окна при нажатии на кнопку закрытия
+            closeButtonFlight.addEventListener("click", function () {
+                flightModal.style.display = "none";
+            });
+
+            //////Обработка для выбора города
+            $(document).ready(function () {
+                $.ajax({
+                    url: '/SearchTicket/GetPlanes', // Путь к обработчику поискового запроса на сервере
+                    type: 'GET',
+                    success: function (response) {
+                        var searchResults = response; // Полученные результаты поиска
+                        $('#aircraft-list').empty();
+                        // Добавляем результаты в список
+                        $.each(searchResults, function (index, result) {
+                            if (result) {
+                                $('#aircraft-list').append('<option>' + result.model + '</option>');
+                            }
+                        });
+
+                        // Показываем или скрываем список результатов в зависимости от наличия результатов
+                    },
+                    error: function (xhr, status, error) {
+                        // Обработка ошибок при выполнении запроса
+                        console.error('Ошибка AJAX-запроса:', error);
+                    }
+                });
+            });
+            $(document).ready(function () {
+                $.ajax({
+                    url: '/SearchTicket/GetAirlines', // Путь к обработчику поискового запроса на сервере
+                    type: 'GET',
+                    success: function (response) {
+                        var searchResults = response; // Полученные результаты поиска
+                        $('#airlineForFlight').empty();
+                        // Добавляем результаты в список
+                        $.each(searchResults, function (index, result) {
+                            if (result) {
+                                $('#airlineForFlight').append('<option>' + result.name + '</option>');
+                            }
+                        });
+                        // Показываем или скрываем список результатов в зависимости от наличия результатов
+                    },
+                    error: function (xhr, status, error) {
+                        // Обработка ошибок при выполнении запроса
+                        console.error('Ошибка AJAX-запроса:', error);
+                    }
+                });
+            });
+            $(document).ready(function () {
+                $.ajax({
+                    url: '/SearchTicket/GetRoutes', // Путь к обработчику поискового запроса на сервере
+                    type: 'GET',
+                    success: function (response) {
+                        var searchResults = response; // Полученные результаты поиска
+                        $('#routeForFlight').empty();
+                        // Добавляем результаты в список
+                        $.each(searchResults, function (index, result) {
+                            if (result) {
+                                $('#routeForFlight').append('<option>' + result + '</option>');
+                            }
+                        });
+
+                        // Показываем или скрываем список результатов в зависимости от наличия результатов
+                    },
+                    error: function (xhr, status, error) {
+                        // Обработка ошибок при выполнении запроса
+                        console.error('Ошибка AJAX-запроса:', error);
+                    }
+                });
+            });
+            // Обработка нажатия кнопки "Добавить маршрут"
+            var addRouteButton = document.getElementById("addFlightButton");
+            addRouteButton.addEventListener("click", function () {
+                var timeFromInput = document.getElementById("datetimepickerFrom");
+                var timeFrom = timeFromInput.value;
+                var timeToInput = document.getElementById("datetimepickerTo");
+                var timeTo = timeToInput.value;
+                var airlineInput = document.getElementById("airlineForFlight");
+                var airline = airlineInput.value;
+                var routeInput = document.getElementById("routeForFlight");
+                var route = routeInput.value;
+                var planeInput = document.getElementById("aircraft-list");
+                var plane = planeInput.value;
+                var priceInput = document.getElementById("Price");
+                var price = priceInput.value;
+                var flight = {
+                    Airline: airline,
+                    dateOfDeparture: timeFrom,
+                    dateOfDestination: timeTo,
+                    Route:route,
+                    Plane:plane,
+                    Price:price
+                };
+                var combinedModel = {
+                    FlightModel: flight
+                };
+
+                $.ajax({
+                    url: "/Admin/AddFlight",
+                    type: "POST",
+                    data: JSON.stringify(combinedModel),
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (result) {
+                        // Обработка успешного ответа от сервера
+                        alert(result.message);
+                        location.reload(true);
+                    },
+                    error: function (xhr, status, error) {
+                        // Обработка ошибки
+                        if (xhr.status !== 200) {
+                            var errorMessage = xhr.responseText;
+                            alert('Произошла ошибка при добавлении рейса: ' + errorMessage);
+                        }
+
+                    }
+                });
+            });
+            $(function () {
+                $('#datetimepickerFrom').datetimepicker({
+                    format: 'YYYY-MM-DD HH:mm', // Формат даты и времени
+                    sideBySide: true,
+                    icons: {
+                        time: 'fas fa-clock', // Иконка времени
+                        date: 'fas fa-calendar', // Иконка даты
+                        up: 'fas fa-chevron-up', // Иконка увеличения
+                        down: 'fas fa-chevron-down', // Иконка уменьшения
+                        previous: 'fas fa-chevron-left', // Иконка предыдущего периода
+                        next: 'fas fa-chevron-right', // Иконка следующего периода
+                        today: 'fas fa-calendar-check', // Иконка "Сегодня"
+                        clear: 'fas fa-trash', // Иконка "Очистить"
+                        close: 'fas fa-times' // Иконка "Закрыть"
+                    },
+                    minDate: moment()
+                });
+                $('#datetimepickerTo').datetimepicker({
+                    format: 'YYYY-MM-DD HH:mm', // Формат даты и времени
+                    sideBySide: true,
+                    icons: {
+                        time: 'fas fa-clock', // Иконка времени
+                        date: 'fas fa-calendar', // Иконка даты
+                        up: 'fas fa-chevron-up', // Иконка увеличения
+                        down: 'fas fa-chevron-down', // Иконка уменьшения
+                        previous: 'fas fa-chevron-left', // Иконка предыдущего периода
+                        next: 'fas fa-chevron-right', // Иконка следующего периода
+                        today: 'fas fa-calendar-check', // Иконка "Сегодня"
+                        clear: 'fas fa-trash', // Иконка "Очистить"
+                        close: 'fas fa-times' // Иконка "Закрыть"
+                    },
+                    minDate: moment()
+                });
+            });
+
+        </script>
+
+        @*Добавление самолета*@
+        <script>
+            var planeModal = document.getElementById("planeModal");
+            var closeButtonPlane = document.querySelector("#planeModal .close");
+            var numderOfSeats = document.getElementById('numderOfSeats');
+
+            // Назначаем обработчик события ввода
+            // Получаем введенное значение
+            // Удаляем все символы, кроме цифр
+            // Устанавливаем отфильтрованное значение обратно в поле ввода
+
+            numderOfSeats.addEventListener('input', function () {
+                
+                var numderOfSeatsV = numderOfSeats.value;
+                
+                var filteredValue = numderOfSeatsV.replace(/\D/g, '');
+               
+                numderOfSeats.value = filteredValue;
+            });
+            var numderOfRow = document.getElementById('numderOfRow');
+
+            // Назначаем обработчик события ввода
+            numderOfRow.addEventListener('input', function () {
+                // Получаем введенное значение
+                var numderOfRowV = numderOfRow.value;
+
+                // Удаляем все символы, кроме цифр
+                var filteredValue = numderOfRowV.replace(/\D/g, '');
+
+                // Устанавливаем отфильтрованное значение обратно в поле ввода
+                numderOfRow.value = filteredValue;
+            });
+            // Открытие модального окна
+            function openPlaneModal() {
+                planeModal.style.display = "block";
+            }
+
+            var addPlaneButton = document.getElementById("addPlaneButton");
+            addPlaneButton.addEventListener("click", function () {
+                // Получаем поле ввода по его идентификатору
+                
+                var modelInput = document.getElementById("modelPlane");
+                var model = modelInput.value;
+                var dateManufactureInput = document.getElementById("dateManufacture");
+                var dateManufacture = dateManufactureInput.value;
+                var numderOfSeatsInput = document.getElementById("numderOfSeats");
+                var numderOfSeats = numderOfSeatsInput.value;
+                var numderOfRowInput = document.getElementById("numderOfRow");
+                var numderOfRow = numderOfRowInput.value;
+                var plane = {
+                    Model: model,
+                    DateOfManufacture: dateManufacture,
+                    Seats: numderOfSeats,
+                    numOfRow: numderOfRow
+                };
+                console.log(plane)
+                var combinedModel = {
+                    AirplaneModel: plane
+                };
+
+                $.ajax({
+                    url: "/Admin/AddPlane",
+                    type: "POST",
+                    data: JSON.stringify(combinedModel),
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (result) {
+                        // Обработка успешного ответа от сервера
+                        alert(result.message);
+                        location.reload(true);
+                    },
+                    error: function (xhr, status, error) {
+                        // Обработка ошибки
+                        if (xhr.status !== 200) {
+                            var errorMessage = xhr.responseText;
+                            alert('Произошла ошибка при добавлении самолета: ' + errorMessage);
+                        }
+
+                    }
+                });
+            });
+
+            // Закрытие модального окна при нажатии на кнопку закрытия
+            closeButtonPlane.addEventListener("click", function () {
+                planeModal.style.display = "none";
+            });
+            $('#dateManufacture').datetimepicker({
+                format: 'YYYY-MM-DD', // Формат даты и времени
+                sideBySide: true,
+                icons: {
+                    time: 'fas fa-clock', // Иконка времени
+                    date: 'fas fa-calendar', // Иконка даты
+                    up: 'fas fa-chevron-up', // Иконка увеличения
+                    down: 'fas fa-chevron-down', // Иконка уменьшения
+                    previous: 'fas fa-chevron-left', // Иконка предыдущего периода
+                    next: 'fas fa-chevron-right', // Иконка следующего периода
+                    today: 'fas fa-calendar-check', // Иконка "Сегодня"
+                    clear: 'fas fa-trash', // Иконка "Очистить"
+                    close: 'fas fa-times' // Иконка "Закрыть"
+                },
+                maxDate: moment()
+            });
+        </script>
+        }
+    </body>
+</html>
+
+

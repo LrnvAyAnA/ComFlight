@@ -1,0 +1,296 @@
+﻿
+
+
+@using ComFlight.ViewModels;
+
+@{
+    ViewData["Title"] = "Index";
+}
+@model TicketDetails
+
+<html>
+@Html.Partial("Pattern")
+<head>
+    <style>
+        .center-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 10vh; /* Высота контейнера на весь видимый экран */
+        }
+
+        
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            width: 100%;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: none;
+        }
+
+            .search-results li {
+                padding: 8px;
+                cursor: pointer;
+            }
+
+                .search-results li:hover {
+                    background-color: #a5a9ad;
+                }
+
+        .ticket {
+            border: 2px solid #ccc;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+            .ticket .header {
+                font-weight: bold;
+            }
+
+            .ticket .details {
+                margin-top: 5px;
+            }
+
+                .ticket .details p {
+                    margin: 0;
+                }
+
+        .space {
+            height: 25px;
+        }
+    </style>
+</head>
+<body>
+    <form id="searchForm">
+        <div class="center-container">
+            <div class="search-container">
+                <input class="field" type="text" id="searchInputFrom" placeholder="From" autocomplete="off" />
+                <ul id="searchResultsFrom" class="search-results"></ul>
+            </div>          
+            <div id="spacer"></div>
+            <div class="search-container">
+                <input type="text" id="searchInputTo" placeholder="To" autocomplete="off" />
+                <ul id="searchResultsTo" class="search-results"></ul>
+            </div>
+            <div id="spacer"></div>
+            <input type="date" id="dateInput" placeholder="Когда" />
+            <div id="spacer"></div>
+            <button id="buttonAccount" type="submit">Найти</button>
+        </div>
+        <div class="center-container">
+            <button id="sortButton" style="display: none;">Sort by Price</button>
+        </div>
+        @if (Model != null)
+        {
+            <div class="text-danger">
+                @Html.ValidationSummary()
+            </div>
+        }
+
+    </form>
+    <div class="space"></div>
+    <div id="ticketList"></div>
+    @section Scripts {
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script>
+            $(document).ready(function () {
+                $('#searchInputFrom').on('input', function () {
+                    var searchTerm = $(this).val().toLowerCase();
+
+                    $.ajax({
+                        url: '/SearchTicket/GetCities', // Путь к обработчику поискового запроса на сервере
+                        type: 'GET',
+                        data: { searchTerm: searchTerm },
+                        success: function (response) {
+                            var searchResults = response; // Полученные результаты поиска
+
+                            // Очищаем предыдущие результаты
+                            $('#searchResultsFrom').empty();
+
+                            // Добавляем новые результаты в список
+                            $.each(searchResults, function (index, result) {
+                                $('#searchResultsFrom').append('<li>' + result + '</li>');
+                            });
+
+                            // Показываем или скрываем список результатов в зависимости от наличия результатов
+
+                            if (searchResults.length > 0) {
+                                $('#searchResultsFrom').show();
+                            } else {
+                                $('#searchResultsFrom').hide();
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            // Обработка ошибок при выполнении запроса
+                            console.error('Ошибка AJAX-запроса:', error);
+                        }
+                    });
+                    $('#searchResultsFrom').on('click', 'li', function () {
+                        var selectedResult = $(this).text();
+                        $('#searchInputFrom').val(selectedResult);
+                        $('#searchResultsFrom').hide();
+                    });
+                });
+                $('#searchInputTo').on('input', function () {
+                    var searchTerm = $(this).val().toLowerCase();
+
+                    $.ajax({
+                        url: '/SearchTicket/GetCities', // Путь к обработчику поискового запроса на сервере
+                        type: 'GET',
+                        data: { searchTerm: searchTerm },
+                        success: function (response) {
+                            var searchResults = response; // Полученные результаты поиска
+
+                            // Очищаем предыдущие результаты
+                            $('#searchResultsTo').empty();
+
+                            // Добавляем новые результаты в список
+                            $.each(searchResults, function (index, result) {
+                                $('#searchResultsTo').append('<li>' + result + '</li>');
+                            });
+
+                            // Показываем или скрываем список результатов в зависимости от наличия результатов
+
+                            if (searchResults.length > 0) {
+                                $('#searchResultsTo').show();
+                            } else {
+                                $('#searchResultsTo').hide();
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            // Обработка ошибок при выполнении запроса
+                            console.error('Ошибка AJAX-запроса:', error);
+                        }
+                    });
+                });
+                $('#searchResultsTo').on('click', 'li', function () {
+                    var selectedResult = $(this).text();
+                    $('#searchInputTo').val(selectedResult);
+                    $('#searchResultsTo').hide();
+                });
+            });
+            $(document).ready(function () {
+                // Обработчик события submit для формы
+                $('#searchForm').on('submit', function (e) {
+                    e.preventDefault(); // Предотвращаем отправку формы
+
+                    // Получаем значения полей городов вылета и прилета, а также даты вылета
+                    var departureCity = $('#searchInputFrom').val();
+                    var destinationCity = $('#searchInputTo').val();
+                    var departureDate = $('#dateInput').val();
+                    console.log(departureDate);
+                    // AJAX-запрос для получения данных о билетах
+                    $.ajax({
+                        url: '/SearchTicket/Search',
+                        type: 'GET',
+                        data: {
+                            From: departureCity,
+                            To: destinationCity,
+                            date: departureDate
+                        },
+                        success: function (response) {
+                            // Очищаем предыдущие результаты
+                            $('#ticketList').empty();
+                            // Добавляем новые результаты
+                            $.each(response, function (index, ticket) {
+                                var ticketItem = $('<div>').addClass('ticket');
+                                var header = $('<div>').addClass('header').text(ticket.airline);
+                                var details = $('<div>').addClass('details');
+                                var from = $('<p>').text('From: ' + ticket.departureAirport);
+                                var to = $('<p>').text('To: ' + ticket.destinationAirport);
+                                var price = $('<p>').text('Price: ' + ticket.price);
+                                var bookButton = $('<button>').text('Book').addClass('book-button');
+                                details.append(from, to, price);
+                                ticketItem.append(header, details, bookButton);
+                                $('#ticketList').append(ticketItem);
+                            });
+                        },
+                        error: function (xhr, status, error) {
+                            // Обработка ошибок при выполнении запроса
+                            console.error('Ошибка AJAX-запроса:', error);
+                        }
+                    });
+                });
+            });
+            $(document).ready(function () {
+                // Обработчик события нажатия на кнопку "Sort by Price"
+                $(document).on('click', '#sortButton', function () {
+                    var ticketList = $('#ticketList').html();
+                    // Отправка AJAX-запроса для получения отсортированных билетов
+                    $.ajax({
+                        url: '/SearchTicket/SortByPrice', // Путь к API для сортировки билетов по цене
+                        type: 'GET',
+                        data: { ticketList: ticketList }, // Передача флага направления сортировки на сервер
+                        success: function (response) {
+                            // Очищаем предыдущие результаты
+                            $('#ticketList').empty();
+                 
+                            // Добавляем новые результаты
+                            $.each(response, function (index, ticket) {
+                                var ticketItem = $('<div>').addClass('ticket');
+                                var header = $('<div>').addClass('header').text(ticket.airline);
+                                var details = $('<div>').addClass('details');
+                                var from = $('<p>').text('From: ' + ticket.departureAirport);
+                                var to = $('<p>').text('To: ' + ticket.destinationAirport);
+                                var price = $('<p>').text('Price: ' + ticket.price);
+                                var bookButton = $('<button>').text('Book').addClass('book-button');
+                                details.append(from, to, price);
+                                ticketItem.append(header, details, bookButton);
+
+                                $('#ticketList').append(ticketItem);
+                            });
+                        },
+                        error: function (xhr, status, error) {
+                            // Обработка ошибок при выполнении запроса
+                            console.error('Ошибка AJAX-запроса для сортировки билетов:', error);
+                        }
+                    });
+                });
+                $(document).on('click', '.book-button', function () {
+                    $.ajax({
+                        url: '/Book/BookTicket',
+                        type: 'POST',
+                        
+                        success: function (response) {
+                            // Обработка успешного бронирования билета
+                            window.location.href = '/Book/Booking';
+                            // Например, показать сообщение об успешной брони или выполнить другие действия
+                        },
+                        error: function (xhr, status, error) {
+                            if (xhr.status === 401) {
+                                // Пользователь не вошел в аккаунт
+                                alert('Зайдите в аккаунт, чтобы забронировать');
+                            } else {
+                                // Обработка других ошибок
+                                console.error('Ошибка AJAX-запроса для бронирования билета:', error);
+                            }
+                        }
+                    });
+                    
+                });
+                // Отображение кнопки "Sort by Price" только после поиска билетов
+                $('#searchForm').on('submit', function () {
+                    var departureCity = $('#searchInputFrom').val();
+                    var destinationCity = $('#searchInputTo').val();
+                    var departureDate = $('#dateInput').val();
+                    if (departureCity != "" & destinationCity != "" & departureDate!=""){
+                        $('#sortButton').show();
+                    }
+                });
+            });
+        </script>
+    }
+</body>
+</html>
+
+
+

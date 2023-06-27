@@ -1,0 +1,229 @@
+﻿@using ComFlight.ViewModels;
+
+@{
+    ViewData["Title"] = "Read";
+}
+@model CombinedModel
+@Html.Partial("AdminAccount")
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+
+    <style>
+        .airplanes-table {
+            width: 80%;
+            border-collapse: collapse;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center; /* Центрирование по горизонтали */
+        }
+            .airplanes-table th, .airplanes-table td {
+                padding: 10px;
+                text-align: left;
+                border-bottom: 1px solid #ddd;
+            }
+
+            .airplanes-table th {
+                background-color: #f2f2f2;
+            }
+
+            .airplanes-table tr:hover {
+                background-color: #f5f5f5;
+            }
+        .search-results li {
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            width: 100%;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: none;
+        }
+
+            .search-results li:hover {
+                background-color: #a5a9ad;
+            }
+
+        .space {
+            height: 35px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+
+        .modal-content {
+            width: 45%;
+            height: 40%;
+            background-color: #fefefe;
+            margin: 18% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            margin-left: auto;
+            margin-top: -50px;
+        }
+
+            .close:hover,
+            .close:focus {
+                color: black;
+                text-decoration: none;
+                cursor: pointer;
+            }
+
+        .buttonAccount {
+            display: inline-block;
+            padding: 8px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-right: 10px;
+            width: 100px;
+        }
+
+        input[type="text"] {
+            width: auto;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .gray-text {
+            color: gray;
+        }
+
+        #airportFromResults {
+            position: absolute;
+            z-index: 2;
+        }
+    </style>
+</head>
+<body>
+    <div class="space"></div>
+    <div id="center">
+        <select id="addSelect">
+            <option value="City" selected>Город</option>
+            <option value="Admin">Админ</option>
+            <option value="Airport">Аэропорт</option>
+            <option value="Airline">Авиакомпания</option>
+            <option value="Flight">Рейс</option>
+            <option value="Route">Маршрут</option>
+            <option value="Booking">Бронирование</option>
+            <option value="Ticket">Билет</option>
+            <option value="Plane">Самолет</option>
+        </select>
+        <div id="spacer"></div>
+        <div id="spacer"></div>
+        <button class="buttonAccount" id="openModalButton">Выбрать</button>
+    </div>
+    <div class="container">
+        <div id="airplanesTableContainer"></div>
+    </div>
+    @section scripts{
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        @*<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">*@
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+        <script>
+            document.getElementById("openModalButton").addEventListener("click", function () {
+                var selectElement = document.getElementById("addSelect");
+                var selectedValue = selectElement.value;
+
+                switch (selectedValue) {
+                    case "Booking":
+                        openBookingModal();
+                        break;
+                    case "Ticket":
+                        openTicketModal();
+                        break;
+                }
+            });
+
+
+            function openBookingModal() {
+                // Код для открытия модального окна "Бронирование"
+            }
+
+            function openTicketModal() {
+                // Код для открытия модального окна "Билет"
+            }
+
+        </script>
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js" ></script>
+        <script>
+            $(document).ready(function () {
+                // Обработчик события нажатия на кнопку
+                $('#openModalButton').click(function () {
+                    $.ajax({
+                        url: '/Admin/getAirplanesData', // Путь к API для получения данных из базы данных
+                        type: 'GET',
+                        success: function (response) {
+                            var table = $('<table>').addClass('airplanes-table');
+                            var headerRow = $('<tr>');
+                            headerRow.append($('<th>').text('ModelAirplane'));
+                            headerRow.append($('<th>').text('Rows'));
+                            headerRow.append($('<th>').text('DateOfManufacture'));
+                            headerRow.append($('<th>').text('Seats'));
+                            table.append(headerRow);
+
+                            $.each(response, function (index, airplane) {
+                                var row = $('<tr>');
+                                row.append($('<td>').text(airplane.model));
+                                row.append($('<td>').text(airplane.numOfRow));
+                                row.append($('<td>').text(airplane.dateOfManufacture));
+                                row.append($('<td>').text(airplane.seats));
+                                table.append(row);
+                                console.log(airplane)
+                            });
+                            
+                            $('#airplanesTableContainer').empty().append(table);
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('Ошибка AJAX-запроса:', error);
+                        }
+                    });
+                });
+            });
+        </script>
+
+    }
+</body>
+</html>

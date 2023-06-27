@@ -1,0 +1,86 @@
+﻿
+@{
+    ViewData["Title"] = "UserAccount";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        h1{
+            text-align: center;
+            font-size:40;      
+        }
+        .space{
+            height:30px;
+        }
+
+        .buttonAccount {
+            display: inline-block;
+            padding: 8px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+@Html.Partial("Pattern")
+<body>
+    <div>
+        <h1>Здравствуйте, <span id="userName"></span></h1>
+        <div class="space"></div>
+        <div style="text-align: center;">
+            <button class="buttonAccount" id="updateInfo"><span id="infoState"></span> мои данные</button>
+            <div class="space"></div>
+            <button class="buttonAccount">Мои бронирования</button>
+        </div>
+    </div>
+    
+    @section scripts{
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    @*Получение имени пользователя*@
+    <script>
+        $(document).ready(function () {
+                $.ajax({
+                    url: '/User/GetStateInfo',
+                    type: 'POST',
+                    success: function (response) {
+                        var hasAdditionalData = response.d;
+                        if(hasAdditionalData)
+                        {
+                            $('#infoState').text("Редактировать");
+                        }
+                        else{
+
+                            $('#infoState').text("Добавить");
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Ошибка AJAX-запроса:', error);
+                    }
+                });
+            $.ajax({
+                url: '/User/GetName', // Путь к контроллеру и методу, возвращающему имя пользователя
+                type: 'GET',
+                success: function (response) {
+                    $('#userName').text(response); // Устанавливаем имя пользователя на странице
+                },
+                error: function (xhr, status, error) {
+                    console.error('Ошибка AJAX-запроса:', error);
+                }
+            });
+        });
+    </script>
+    @*Обработка кнопки редактирования *@
+    <script>
+            var infoButton = document.getElementById("updateInfo");
+            infoButton.addEventListener("click", function ()) {
+
+            }
+    </script>
+}
+</body>
+</html>

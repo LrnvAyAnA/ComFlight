@@ -1,0 +1,46 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@Html.AntiForgeryToken()
+@using System.Security.Claims
+@{
+}
+<html>
+<head>
+
+</head>
+<header id="backgr">
+	<div id="header">
+		<div id="logo">
+			<a href="/">
+				<img src="/Images/Logo3.svg" alt="Logo" height="90">
+			</a>
+		</div>		
+		@{
+			var identity = User.Identity as ClaimsIdentity;
+		}
+
+		@if (identity != null && identity.IsAuthenticated)
+		{
+			var isAdmin = identity.HasClaim(c => c.Type == ClaimTypes.Role && c.Value == "Администратор");
+			var accountLink = isAdmin ? "/Profile/AdminAccount" : "/Profile/UserAccount";
+			<form asp-action="Logout" asp-controller="Profile" method="post">
+				<div id="button-block">
+					<a href="@accountLink">
+						<img src="/Images/account.svg" alt="account" height="45">
+					</a>
+					<button id="buttonAccount" type="submit">Выход</button>					
+				</div>
+			</form>
+		}
+		else
+		{
+			<div id="button-block">
+				<a href="/Profile/SignIn" id="buttonAccount">Вход</a>
+				<a href="/Profile/SignUp" id="buttonAccount">Регистрация</a>
+			</div>
+		}
+		
+	</div>
+</header>
+</html>

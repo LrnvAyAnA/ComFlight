@@ -1,0 +1,102 @@
+﻿
+@{
+    ViewData["Title"] = "Booking";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .registration-form {
+            background-color: #f0f0f0;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            justify-content: center;
+            align-items: center;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        div {
+            margin-bottom: 10px;
+            align-items: center;
+            list-style-type: none;
+        }
+
+        label {
+            display: inline-block;
+            width: 100px;
+        }
+    </style>
+</head>
+@Html.Partial("Pattern")
+<body>
+    <form class="registration-form" method="post">
+        <h2>Заполните данные</h2>
+        <div>
+            <label>Имя:</label>
+            <input id="name" type="text">
+        </div>
+        <div>
+            <label>Фамилия:</label>
+            <input id="lastname" type="text">
+        </div>
+        <div>
+            <label>Отчество:</label>
+            <input id="middlename"type="text">
+        </div>
+        <div>
+            <label>Номер паспорта:</label>
+            <input id ="passport" type="text">
+        </div>
+        <div>
+            <label>Пол:</label>
+            <select id="gender">
+                <option value="Male">Мужской</option>
+                <option value="Female">Женский</option>
+            </select>
+        </div>
+        <div>
+            <label>Дата рождения:</label>
+            <input type="date" id="birthday"/>
+        </div>
+        @if (Model != null)
+        {
+            <div class="text-danger">
+                @Html.ValidationSummary()
+            </div>
+        }
+        <div class="button-wrapper">
+            <input type="submit" id="book" value="Забронировать">
+        </div>
+    </form>
+   @section scripts{
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script>
+            var addPlaneButton = document.getElementById("book");
+            addPlaneButton.addEventListener("click", function () {
+                $.ajax({
+                    url: '/', // Замените '/myPage' на URL другой страницы, на которую вы хотите перейти
+                    type: 'GET',
+                    success: function (response) {
+                        alert('Билет на рейс забронирован');
+                        console.log("z")
+                        window.location.href = '/'; // Переход на другую страницу
+                    },
+                    error: function (xhr, status, error) {
+                        alert('Произошла ошибка при выполнении запроса AJAX.');
+                        console.log(error);
+                    }
+                });
+            });
+        </script>
+   }
+
+</body>
+</html>
+
